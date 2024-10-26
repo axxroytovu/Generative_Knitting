@@ -1,12 +1,14 @@
 import nltk
+from nltk.corpus import stopwords
 import numpy as np
 from nltk.chunk.regexp import *
-from nltk.corpus import wordnet as wn
 from gensim.models import Word2Vec
 import gensim.downloader as api
 import gensim
 import ssl
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import requests
 
 try:
     _create_unverified_https_context = ssl._create_unverified_context
@@ -15,7 +17,15 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-model_glove_twitter = api.load("glove-twitter-25")
+model_glove_wiki = api.load("glove-wiki-gigaword-100")
+nltk.download("stopwords")
+stop_words = set(stopwords.words('english'))
+
+def parse_str(instring):
+    c = [kword for kword in instring.split(" ") if kword not in stop_words]
+    if not c:
+        return instring.split(" ")
+    return c
 
 def tree_parse(tree):
     patterns = []
@@ -49,176 +59,10 @@ def tree_parse(tree):
             phrases.append((prep, cols))
     return patterns, colors, phrases
                     
-colors = """alizarin
-amaranth
-amber
-amethyst
-apricot
-aqua
-aquamarine
-asparagus
-auburn
-azure
-beige
-bistre
-black
-blue
-blue-green
-blue-violet
-bondi-blue
-brass
-bronze
-brown
-buff
-burgundy
-camouflage-green
-caput-mortuum
-cardinal
-carmine
-carrot-orange
-celadon
-cerise
-cerulean
-champagne
-charcoal
-chartreuse
-cherry-blossom-pink
-chestnut
-chocolate
-cinnabar
-cinnamon
-cobalt
-copper
-coral
-corn
-cornflower
-cream
-crimson
-cyan
-dandelion
-denim
-ecru
-emerald
-eggplant
-falu-red
-fern-green
-firebrick
-flax
-forest-green
-french-rose
-fuchsia
-gamboge
-gold
-goldenrod
-green
-grey
-han-purple
-harlequin
-heliotrope
-hollywood-cerise
-indigo
-ivory
-jade
-kelly-green
-khaki
-lavender
-lawn-green
-lemon
-lemon-chiffon
-lilac
-lime
-lime-green
-linen
-magenta
-magnolia
-malachite
-maroon
-mauve
-midnight-blue
-mint-green
-misty-rose
-moss-green
-mustard
-myrtle
-navajo-white
-navy-blue
-ochre
-office-green
-olive
-olivine
-orange
-orchid
-papaya-whip
-peach
-pear
-periwinkle
-persimmon
-pine-green
-pink
-platinum
-plum
-powder-blue
-puce
-prussian-blue
-psychedelic-purple
-pumpkin
-purple
-quartz-grey
-raw-umber
-razzmatazz
-red
-robin-egg-blue
-rose
-royal-blue
-royal-purple
-ruby
-russet
-rust
-safety-orange
-saffron
-salmon
-sandy-brown
-sangria
-sapphire
-scarlet
-school-bus-yellow
-sea-green
-seashell
-sepia
-shamrock-green
-shocking-pink
-silver
-sky-blue
-slate-grey
-smalt
-spring-bud
-spring-green
-steel-blue
-tan
-tangerine
-taupe
-teal
-tenné-(tawny)
-terra-cotta
-thistle
-titanium-white
-tomato
-turquoise
-tyrian-purple
-ultramarine
-van-dyke-brown
-vermilion
-violet
-viridian
-wheat
-white
-wisteria
-yellow
-zucchini"""
+color_file = requests.get("https://xkcd.com/color/rgb.txt")
+valid_colors = [c.split("\t")[0] for c in color_file.text.split("\n")]
 
-cparsed = [c.replace("-", " ") for c in colors.split("\n")]
-cparsed = [c for c in cparsed if c in model_glove_twitter]
-print(cparsed[0])
+print(valid_colors[0])
 
 chunk_parser = RegexpParser("""
 S: {<NP> <VP>}
@@ -231,23 +75,49 @@ V: {<V.*>} # Verb
 """)
 
 sentences = [
-    "(S (NP me) (VP (V am) (NP sorry)))",
-    "(S (NP something) (VP (V struck) (NP me)) (PP (P in) (NP the rear)))",
-    "(S (NP me) (VP (RB just) (V arrived) (NP here)))"
+    "(S (NP sokka) (VP (V is) (NP sorry)))",
+    "(S (NP something) (VP (V struck) (NP sokka)) (PP (P in) (NP the rear)))",
+    "(S (NP sokka) (VP (RB just) (V arrived) (NP here)))",
+    "(S (NP five seven then five syllables) (VP (V mark) (NP haiku)))",
+    "(S (NP sokka) (VP (V is) (NP a remarkable oaf)))",
+    "(S (NP other people) (VP (V call) (NP me) (NP sokka)) (PP (P in) (NP the water tribe)))",
+    "(S (NP sokka) (VP (V is) (NP not an oaf)))",
+    "(S (NP a chittering monkey) (VP (V climbs) (NP treetops)))",
+    "(S (NP a chittering monkey) (VP (V thinks) (NP himself) (NP tall)))",
+    "(S (NP teacher) (VP (V thinks) (NP teacher smart)) (PP (P with) (NP your fancy words)))",
+    "(S (NP haiku) (VP (V is) (NP not so hard)))",
+    "(S (NP people) (VP (V spend) (NP seasons) (NP mastering the form the style)))",
+    "(S (NP nobody) (VP (V calls) (NP haiku) (NP easy)))",
+    "(S (NP sokka) (VP (V calls) (NP haiku) (NP easy)))",
+    "(S (NP sokka) (VP (V paddles) (NP my canoe)))",
+    "(S (NP sokka) (VP (V paddles) (NP your butt)))",
+    "(S (NP nuts) (NP fruits) (NP plums) (VP (V drop)))",
+    "(S (NP nuts) (NP fruits) (NP plums) (VP (V is) (NP ready to be squashed)))"
 ]
-
+locked_colors = {}
+used_colors = set()
 for s in sentences:
     entities = nltk.tree.Tree.fromstring(s)
     entities.pretty_print()
     patterns, colors, phrases = tree_parse(entities)
     print(patterns, colors, phrases)
-    for p in patterns:
-        img = model_glove_twitter[p] > 0
-        plt.imshow(img.reshape((5,5)))
-        plt.title(p)
-        plt.show()
+    determined_colors = [locked_colors[c] for c in colors if c in locked_colors]
     for c in colors:
-        cols = sorted(cparsed, key=lambda k: model_glove_twitter.similarity(k, c.lower()), reverse=True)
-        print(c, cols[:3])
+        if c in locked_colors:
+            continue
+        cols = sorted(valid_colors, key=lambda k: model_glove_wiki.n_similarity(parse_str(k), parse_str(c)), reverse=True)
+        print(model_glove_wiki.most_similar(positive=parse_str(c))[:3])
+        i = 0
+        while "xkcd:"+cols[i] in determined_colors or "xkcd:"+cols[i] in used_colors:
+            i += 1
+        determined_colors.append("xkcd:"+cols[i])
+        locked_colors[c] = "xkcd:"+cols[i]
+        used_colors.add("xkcd:"+cols[i])
+        print(c, cols[i])
+    for p in patterns:
+        img = model_glove_wiki[p]
+        plt.imshow(img.reshape((10,10)), cmap=ListedColormap(determined_colors))
+        plt.title(s)
+        plt.show()
         
         
