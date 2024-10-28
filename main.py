@@ -82,7 +82,7 @@ sentences = [
     "(S (NP sokka) (VP (V is) (NP a remarkable oaf)))",
     "(S (NP other people) (VP (V call) (NP me) (NP sokka)) (PP (P in) (NP the water tribe)))",
     "(S (NP sokka) (VP (V is) (NP not an oaf)))",
-    "(S (NP a chittering monkey) (VP (V climbs) (NP treetops)))",
+    "(S (NP a chittering monkey) (VP (V climbs) (NP treetops)) (PP (P in) (NP springtime)))",
     "(S (NP a chittering monkey) (VP (V thinks) (NP himself) (NP tall)))",
     "(S (NP teacher) (VP (V thinks) (NP teacher smart)) (PP (P with) (NP your fancy words)))",
     "(S (NP haiku) (VP (V is) (NP not so hard)))",
@@ -92,7 +92,9 @@ sentences = [
     "(S (NP sokka) (VP (V paddles) (NP my canoe)))",
     "(S (NP sokka) (VP (V paddles) (NP your butt)))",
     "(S (NP nuts) (NP fruits) (NP plums) (VP (V drop)))",
-    "(S (NP nuts) (NP fruits) (NP plums) (VP (V is) (NP ready to be squashed)))"
+    "(S (NP nuts) (NP fruits) (NP plums) (VP (V is) (NP ready to be squashed)))",
+    "(S (NP teacher) (VP (V sling) (NP that slang)))",
+    "(S (NP sokka) (VP (RB always) (V returns)) (PP (P like) (NP my boomerang)))"
 ]
 locked_colors = {}
 used_colors = set()
